@@ -1,7 +1,20 @@
 # Secrets and TLS material: never commit.
 .env
+.env.*
+!.env.example
 telemetry/certs/*
 !telemetry/certs/.gitkeep
+telemetry/keys/
 *.pem
 *.key
 *.crt
+private-key.pem
+public-key.pem
+tls.key
+tls.crt
+validate_server.json
+partner-token
+partner-token.*
+partner_token
+partner_token.*
+*.token

@@ -1,21 +1,31 @@
 # BNAV Fleet Telemetry — small cloud VM, not a laptop.
-# Official image: tesla/fleet-telemetry (Docker Hub). Pinned to v0.9.4, which had the same
-# digest as :latest when checked Sep 27, 2026 (sha256:28c8b9e2...). Review the tags page before upgrading.
+# Image pin: tesla/fleet-telemetry:v0.9.4 (a release tag, not :latest).
+# Verified 2026-09-28:
+#   GitHub latest release is v0.9.4, published 2026-07-14T23:40:47Z
+#   https://github.com/teslamotors/fleet-telemetry/releases/tag/v0.9.4
+#   Docker Hub tag v0.9.4 exists and shares the index digest of :latest
+#   sha256:28c8b9e244b842a3d7443567cfa385b4db20cf533b8dee3411ce6fe540eb67e2
+#   https://hub.docker.com/r/tesla/fleet-telemetry/tags
+# Chosen because it is the newest published release tag. :latest is the same
+# digest today and would move without a commit. Review the tags page before upgrading.
 # Tesla recommends Firewall/LB -> Fleet Telemetry -> (Kafka). mTLS terminates on this service.
 # Pilot dispatcher = logger (stdout JSON). Add Kafka later if volume requires it.
+# 443 is the only published public port. 8080 is loopback-only. monitoring is unset
+# in config.json, so v0.9.4 does not start a Prometheus listener.
 
 services:
   fleet-telemetry:
     image: tesla/fleet-telemetry:v0.9.4
-    # Optional stricter pin (multi-arch index digest as of Sep 27, 2026):
+    # Optional stricter pin (multi-arch index digest verified 2026-09-28; same as :latest that day):
     # image: tesla/fleet-telemetry@sha256:28c8b9e244b842a3d7443567cfa385b4db20cf533b8dee3411ce6fe540eb67e2
     container_name: bnav-fleet-telemetry
     restart: unless-stopped
     # Same as the image's default CMD; kept explicit.
+    # https://github.com/teslamotors/fleet-telemetry/blob/v0.9.4/Dockerfile
     command: ["/fleet-telemetry", "-config", "/etc/fleet-telemetry/config.json"]
     ports:
-      - "443:443"              # public: vehicles connect here (mTLS)
-      - "127.0.0.1:8080:8080"  # status endpoint (/status): VM-local only, never public
+      - "443:443"              # public: vehicles connect here (mTLS). Only public port.
+      - "127.0.0.1:8080:8080"  # status (/status -> ok): VM loopback only, never 0.0.0.0
     volumes:
       - ./config.json:/etc/fleet-telemetry/config.json:ro
       - ./certs:/etc/certs/server:ro
@@ -24,5 +34,8 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "20m"
-        max-file: "5"
+        # Size cap only. The json-file driver has no time-based retention.
+        # https://docs.docker.com/engine/logging/drivers/json-file/
+        # 2 files x 5 MB = 10 MB maximum. Oldest file is removed on the next roll.
+        max-size: "5m"
+        max-file: "2"
