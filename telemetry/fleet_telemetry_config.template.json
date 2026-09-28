@@ -1,0 +1,19 @@
+{
+  "vins": ["VIN_PLACEHOLDER"],
+  "config": {
+    "hostname": "telemetry.example.com",
+    "port": 443,
+    "ca": "PASTE_PEM_CA_CERTIFICATE_HERE",
+    "fields": {
+      "Location": { "interval_seconds": 10 },
+      "DestinationLocation": { "interval_seconds": 10 },
+      "DestinationName": { "interval_seconds": 10 },
+      "MinutesToArrival": { "interval_seconds": 10 },
+      "MilesToArrival": { "interval_seconds": 10 },
+      "VehicleSpeed": { "interval_seconds": 10 },
+      "Gear": { "interval_seconds": 10 },
+      "GpsState": { "interval_seconds": 10 },
+      "RouteLine": { "interval_seconds": 10 }
+    }
+  }
+}

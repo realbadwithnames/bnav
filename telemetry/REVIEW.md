@@ -1,5 +1,20 @@
 # REVIEW: BNAV Fleet Telemetry cloud pack (Sep 27, 2026)
 
+## Addendum (Sep 28, 2026)
+
+Checked again before the Gate 1/2 prep changes. Sources fetched that day are cited in SETUP.md. This addendum does not rewrite the Sep 27 notes below; where they disagree, this addendum wins.
+
+- **Image pin kept at `tesla/fleet-telemetry:v0.9.4`.** GitHub's latest release is still v0.9.4 (published 2026-07-14T23:40:47Z, https://github.com/teslamotors/fleet-telemetry/releases/tag/v0.9.4). Docker Hub tag `v0.9.4` exists and, on Sep 28, 2026, had the same index digest as `:latest`: `sha256:28c8b9e244b842a3d7443567cfa385b4db20cf533b8dee3411ce6fe540eb67e2` (https://hub.docker.com/r/tesla/fleet-telemetry/tags). No newer release tag was published, so the pin did not move. `:latest` stays unused because it is a floating tag.
+- **Port 8080** remains `127.0.0.1:8080:8080`. Port 443 is the only published public port. `monitoring` stays unset, so v0.9.4 does not start Prometheus (`cmd/main.go` calls `StartServerMetrics` only when `monitoring` is non-nil).
+- **Logging default changed.** `log_level` is `warn` and `logger.verbose` is `false`. `verbose` does not redact VIN or location; it only adds protobuf type names on `V` records (`datastore/simple/logger.go`, `transformers/payload.go`). Record payloads are Info activity logs, and `warn` drops Info (`logger/logger.go`, `config/config.go`). Docker json-file rotation is now `max-size` 5m and `max-file` 2 (10 MB cap, no time retention; https://docs.docker.com/engine/logging/drivers/json-file/). SETUP.md documents the Gate 2 toggle back to `info` / `verbose: true`.
+- **`fleet_telemetry_config` body is no longer [UNVERIFIED].** The create specification on https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-endpoints requires `vins` and `config`, and requires `config.hostname`, `config.ca`, `config.port`, and per-field `interval_seconds`. The template uses those keys. `config.exp`, `alert_types`, and `delivery_policy` are optional there and are omitted.
+- **Scopes for MinutesToArrival, MilesToArrival, VehicleSpeed, and Gear remain [UNVERIFIED].** The published create-endpoint security entry lists `vehicle_device_data` and `vehicle_location` and does not list `vehicle_cmds`.
+- **"QAI garage API"** in the old table below is a retired name. SETUP.md now says "Local garage lab".
+
+---
+
+# REVIEW: BNAV Fleet Telemetry cloud pack (Sep 27, 2026)
+
 Scope: `docker-compose.yml`, `config.json`, `SETUP.md` and `.env.example`, reviewed against official Tesla sources fetched Sep 27, 2026.
 Status legend: **CONFIRMED** (matches source) · **CORRECTED** (changed) · **[UNVERIFIED]** (sources don't settle it; original kept and tagged).
 
