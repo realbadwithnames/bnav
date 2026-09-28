@@ -21,6 +21,8 @@ Do not run this image on the laptop.
 4. Put a real cert on the FQDN:
    - `certs/tls.crt` (full chain)
    - `certs/tls.key`
+   - Set key ownership or the container crash-loops (it runs as UID 65532):
+     `sudo chown 65532:65532 certs/tls.key && sudo chmod 0400 certs/tls.key`
 5. `docker compose up -d`
 6. From a laptop: Tesla's `check_server_cert.sh` against hostname + port 443 + CA chain.
 
