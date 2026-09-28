@@ -1,0 +1,25 @@
+# BNAV Fleet Telemetry — small cloud VM, not a laptop.
+# Official image: tesla/fleet-telemetry
+# Tesla recommends Firewall/LB -> this service. mTLS terminates here.
+# Pilot dispatcher = logger (stdout JSON). Add Kafka later if volume requires it.
+
+services:
+  fleet-telemetry:
+    # Pin a specific tesla/fleet-telemetry release tag here before live-vehicle testing.
+    image: tesla/fleet-telemetry:latest
+    container_name: bnav-fleet-telemetry
+    restart: unless-stopped
+    command: ["/fleet-telemetry", "-config", "/etc/fleet-telemetry/config.json"]
+    ports:
+      - "443:443"
+      - "127.0.0.1:8080:8080"  # status port: localhost-only on the VM
+    volumes:
+      - ./config.json:/etc/fleet-telemetry/config.json:ro
+      - ./certs:/etc/certs/server:ro
+    environment:
+      SUPPRESS_TLS_HANDSHAKE_ERROR_LOGGING: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

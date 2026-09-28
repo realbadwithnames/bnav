@@ -1,0 +1,7 @@
+# Secrets and TLS material: never commit.
+.env
+telemetry/certs/*
+!telemetry/certs/.gitkeep
+*.pem
+*.key
+*.crt
